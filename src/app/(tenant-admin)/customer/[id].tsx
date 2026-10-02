@@ -33,6 +33,7 @@ export default function CustomerProfile() {
 
   useEffect(() => {
     fetchCustomerDetails();
+      setSelectedBooking(null);
   }, [id]);
 
   const fetchCustomerDetails = async () => {
@@ -48,7 +49,7 @@ export default function CustomerProfile() {
 
       const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
-        .select('*, cars(*), payments(*)')
+        .select('*, cars!bookings_car_id_fkey(*), payments(*)')
         .eq('customer_id', id)
         .order('created_at', { ascending: false });
 
@@ -114,6 +115,7 @@ export default function CustomerProfile() {
         payments: [...(selectedBooking.payments || []), newPayment]
       });
       fetchCustomerDetails();
+      setSelectedBooking(null);
     } catch (err: any) {
       setPaymentError(err.message || 'Failed to record payment.');
     } finally {
@@ -129,6 +131,7 @@ export default function CustomerProfile() {
       if (error) throw error;
       setSelectedBooking(null);
       fetchCustomerDetails();
+      setSelectedBooking(null);
       Alert.alert('Deleted', 'Booking deleted successfully.');
     } catch (e: any) {
       if (Platform.OS === 'web') { window.alert('Error: ' + e.message); } else { Alert.alert('Error', e.message); }
@@ -198,25 +201,25 @@ export default function CustomerProfile() {
         <View className="w-1/2 md:w-1/4 p-1">
           <View className="bg-white border-l-4 border-l-blue-500 border border-gray-100 p-4 rounded-xl shadow-sm h-full justify-between">
             <Text className="text-[9px] md:text-[10px] font-bold text-secondary/50 uppercase tracking-widest mb-2">Total Bookings</Text>
-            <Text className="text-2xl md:text-3xl font-black text-primary" numberOfLines={1} adjustsFontSizeToFit>{analytics.totalBookings}</Text>
+            <Text className="text-2xl md:text-3xl font-black text-primary" >{analytics.totalBookings}</Text>
           </View>
         </View>
         <View className="w-1/2 md:w-1/4 p-1">
           <View className="bg-white border-l-4 border-l-purple-500 border border-gray-100 p-4 rounded-xl shadow-sm h-full justify-between">
             <Text className="text-[9px] md:text-[10px] font-bold text-secondary/50 uppercase tracking-widest mb-2">Total Billed</Text>
-            <Text className="text-2xl md:text-3xl font-black text-primary" numberOfLines={1} adjustsFontSizeToFit>₹{analytics.totalBilled}</Text>
+            <Text className="text-2xl md:text-3xl font-black text-primary" >₹{analytics.totalBilled}</Text>
           </View>
         </View>
         <View className="w-1/2 md:w-1/4 p-1">
           <View className="bg-white border-l-4 border-l-emerald-500 border border-gray-100 p-4 rounded-xl shadow-sm h-full justify-between">
             <Text className="text-[9px] md:text-[10px] font-bold text-secondary/50 uppercase tracking-widest mb-2">Total Paid</Text>
-            <Text className="text-2xl md:text-3xl font-black text-primary" numberOfLines={1} adjustsFontSizeToFit>₹{analytics.totalPaid}</Text>
+            <Text className="text-2xl md:text-3xl font-black text-primary" >₹{analytics.totalPaid}</Text>
           </View>
         </View>
         <View className="w-1/2 md:w-1/4 p-1">
           <View className="bg-white border-l-4 border-l-red-500 border border-gray-100 p-4 rounded-xl shadow-sm h-full justify-between">
             <Text className="text-[9px] md:text-[10px] font-bold text-secondary/50 uppercase tracking-widest mb-2">Total Due</Text>
-            <Text className="text-2xl md:text-3xl font-black text-primary" numberOfLines={1} adjustsFontSizeToFit>₹{analytics.totalDue}</Text>
+            <Text className="text-2xl md:text-3xl font-black text-primary" >₹{analytics.totalDue}</Text>
           </View>
         </View>
       </View>
@@ -313,12 +316,6 @@ export default function CustomerProfile() {
                   <Text className="text-base text-secondary/80 font-medium mt-1">{selectedBooking.customers?.full_name}</Text>
                 </View>
                 <View className="flex-col gap-2 items-end">
-                  <TouchableOpacity onPress={() => { setSelectedBooking(null); setPaymentAmount(''); setPaymentError(''); setShowDeleteConfirm(false); }} className="bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-full border border-gray-200">
-                    <Text className="text-gray-500 font-bold text-xs uppercase tracking-wider">Close</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={handleDeleteBooking} className="bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full border border-red-200 mt-2">
-                    <Text className="text-red-600 font-bold text-[10px] uppercase tracking-wider">Delete Booking</Text>
-                  </TouchableOpacity>
                 </View>
               </View>
 
@@ -376,6 +373,10 @@ export default function CustomerProfile() {
                       <Text className="text-white font-bold text-sm tracking-wide">CONFIRM PAYMENT</Text>
                     )}
                   </TouchableOpacity>
+
+                  <TouchableOpacity onPress={handleDeleteBooking} className="bg-white border border-red-200 py-4 mt-3 rounded-xl items-center shadow-sm w-full mt-2">
+                    <Text className="text-red-600 font-bold text-sm uppercase tracking-wider">Delete Booking</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
 
@@ -387,7 +388,7 @@ export default function CustomerProfile() {
                       <View key={i} className={`flex-row justify-between items-center p-4 ${i !== selectedBooking.payments.length - 1 ? 'border-b border-gray-50' : ''}`}>
                         <View className="flex-row items-center gap-3">
                           <View className="w-2 h-2 rounded-full bg-emerald-400" />
-                          <Text className="text-sm font-bold text-secondary/80">{formatDDMMYYYY(p.created_at)}</Text>
+                          <Text className="text-sm font-bold text-secondary/80 whitespace-nowrap">{formatDDMMYYYY(p.created_at)}</Text>
                         </View>
                         <View className="bg-emerald-50 px-3 py-1 rounded-md border border-emerald-100">
                           <Text className="text-sm font-black text-emerald-700">+ ₹{p.amount}</Text>

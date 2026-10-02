@@ -77,9 +77,9 @@ export default function TenantLayout() {
           
           <TouchableOpacity 
             className="bg-primary/5 px-4 py-3 rounded-xl flex-row items-center border border-primary/5 mb-2"
-            onPress={() => { router.push('/(tenant-admin)/availability'); setIsMobileMenuOpen(false); }}
+            onPress={() => { router.push('/(tenant-admin)/bookings'); setIsMobileMenuOpen(false); }}
           >
-            <Text className="text-primary font-bold">📅 Availability</Text>
+            <Text className="text-primary font-bold">📋 Bookings</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -87,6 +87,13 @@ export default function TenantLayout() {
             onPress={() => { router.push('/(tenant-admin)/customers'); setIsMobileMenuOpen(false); }}
           >
             <Text className="text-primary font-bold">👥 Customers</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            className="bg-primary/5 px-4 py-3 rounded-xl flex-row items-center border border-primary/5 mb-2"
+            onPress={() => { router.push('/(tenant-admin)/vendors'); setIsMobileMenuOpen(false); }}
+          >
+            <Text className="text-primary font-bold">🏢 Vendors & Brokers</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -105,7 +112,7 @@ export default function TenantLayout() {
         </View>
         <TouchableOpacity 
           onPress={handleLogout} 
-          className="border border-red-100 bg-red-50 py-3 rounded-xl items-center flex-row justify-center shadow-sm shadow-red-100"
+          className="border border-red-100 bg-red-50 py-3 mb-8 md:mb-0 rounded-xl items-center flex-row justify-center shadow-sm shadow-red-100"
         >
           <Text className="text-red-600 font-bold text-xs tracking-wide">🔒 Secure Logout</Text>
         </TouchableOpacity>
@@ -124,6 +131,41 @@ export default function TenantLayout() {
         </TouchableOpacity>
       </View>
 
+
+      {/* Desktop Sidebar */}
+      <View className="w-64 bg-white border-r border-gray-200 hidden md:flex h-full">
+        <SidebarContent />
+      </View>
+
+      {/* Main Content Area */}
+      <View className="flex-1 overflow-hidden">
+        <Slot />
+      </View>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <View className="md:hidden flex-row justify-around items-center bg-white border-t border-gray-200 pb-6 pt-2 px-4 shadow-2xl z-50">
+        <TouchableOpacity onPress={() => router.push('/(tenant-admin)')} className={`items-center p-2 flex-1 rounded-xl ${pathname === '/' ? 'bg-primary/10' : ''}`}>
+          <Text className="text-xl mb-1">📊</Text>
+          <Text className={`text-[10px] font-bold ${pathname === '/' ? 'text-primary' : 'text-gray-500'}`}>Dash</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/(tenant-admin)/fleet')} className={`items-center p-2 flex-1 rounded-xl ${pathname === '/fleet' ? 'bg-primary/10' : ''}`}>
+          <Text className="text-xl mb-1">🚗</Text>
+          <Text className={`text-[10px] font-bold ${pathname === '/fleet' ? 'text-primary' : 'text-gray-500'}`}>Fleet</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/(tenant-admin)/bookings')} className={`items-center p-2 flex-1 rounded-xl ${pathname === '/bookings' ? 'bg-primary/10' : ''}`}>
+          <Text className="text-xl mb-1">📋</Text>
+          <Text className={`text-[10px] font-bold ${pathname === '/bookings' ? 'text-primary' : 'text-gray-500'}`}>Bookings</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/(tenant-admin)/customers')} className={`items-center p-2 flex-1 rounded-xl ${pathname === '/customers' || pathname.startsWith('/customer/') ? 'bg-primary/10' : ''}`}>
+          <Text className="text-xl mb-1">👥</Text>
+          <Text className={`text-[10px] font-bold ${pathname === '/customers' || pathname.startsWith('/customer/') ? 'text-primary' : 'text-gray-500'}`}>Clients</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/(tenant-admin)/vendors')} className={`items-center p-2 flex-1 rounded-xl ${pathname === '/vendors' || pathname.startsWith('/vendor/') ? 'bg-primary/10' : ''}`}>
+          <Text className="text-xl mb-1">🏢</Text>
+          <Text className={`text-[10px] font-bold ${pathname === '/vendors' || pathname.startsWith('/vendor/') ? 'text-primary' : 'text-gray-500'}`}>Vendors</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
         <View className="absolute inset-0 z-50 flex-row md:hidden">
@@ -137,51 +179,6 @@ export default function TenantLayout() {
           />
         </View>
       )}
-
-      {/* Desktop Sidebar */}
-      <View className="w-64 bg-white border-r border-gray-200 hidden md:flex h-full">
-        <SidebarContent />
-      </View>
-
-      {/* Main Content Area */}
-      <View className="flex-1 overflow-hidden">
-        <Slot />
-      </View>
-
-      {/* Mobile Bottom Navigation Bar */}
-      <View className="md:hidden flex-row justify-around items-center bg-white border-t border-gray-200 pb-6 pt-2 px-2 shadow-2xl z-50">
-        <TouchableOpacity 
-          onPress={() => router.push('/(tenant-admin)')} 
-          className={`items-center p-2 flex-1 rounded-xl ${pathname === '/' ? 'bg-primary/10' : ''}`}
-        >
-          <Text className="text-xl mb-1">📊</Text>
-          <Text className={`text-[10px] font-bold ${pathname === '/' ? 'text-primary' : 'text-gray-500'}`}>Dash</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          onPress={() => router.push('/(tenant-admin)/fleet')} 
-          className={`items-center p-2 flex-1 rounded-xl ${pathname === '/fleet' ? 'bg-primary/10' : ''}`}
-        >
-          <Text className="text-xl mb-1">🚗</Text>
-          <Text className={`text-[10px] font-bold ${pathname === '/fleet' ? 'text-primary' : 'text-gray-500'}`}>Fleet</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          onPress={() => router.push('/(tenant-admin)/availability')} 
-          className={`items-center p-2 flex-1 rounded-xl ${pathname === '/availability' ? 'bg-primary/10' : ''}`}
-        >
-          <Text className="text-xl mb-1">📅</Text>
-          <Text className={`text-[10px] font-bold ${pathname === '/availability' ? 'text-primary' : 'text-gray-500'}`}>Avail</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          onPress={() => router.push('/(tenant-admin)/customers')} 
-          className={`items-center p-2 flex-1 rounded-xl ${pathname === '/customers' || pathname.startsWith('/customer/') ? 'bg-primary/10' : ''}`}
-        >
-          <Text className="text-xl mb-1">👥</Text>
-          <Text className={`text-[10px] font-bold ${pathname === '/customers' || pathname.startsWith('/customer/') ? 'text-primary' : 'text-gray-500'}`}>Clients</Text>
-        </TouchableOpacity>
-      </View>
 
     </View>
   );

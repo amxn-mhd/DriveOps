@@ -38,6 +38,12 @@ export default function NewBookingScreen() {
   const [totalPrice, setTotalPrice] = useState('');
   const [advancePayment, setAdvancePayment] = useState('');
 
+  // New Class-Based Booking Fields
+  const [requestedModel, setRequestedModel] = useState('');
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [bookingStatus, setBookingStatus] = useState('confirmed'); // 'confirmed' or 'enquiry'
+  const [comments, setComments] = useState('');
+
   useEffect(() => {
     fetchInitData();
   }, [car_id]);
@@ -57,6 +63,13 @@ export default function NewBookingScreen() {
     const { data: profile } = await supabase.from('profiles').select('tenant_id').eq('id', user.id).single();
     if (profile?.tenant_id) {
       setTenantId(profile.tenant_id);
+      
+      // Fetch unique car models for the fleet
+      const { data: allCars } = await supabase.from('cars').select('make, model').eq('tenant_id', profile.tenant_id);
+      if (allCars) {
+        const unique = Array.from(new Set(allCars.map((c: any) => `${c.make} ${c.model}`)));
+        setAvailableModels(unique as string[]);
+      }
       
       if (car_id) {
         // Fetch specific car
@@ -289,7 +302,7 @@ export default function NewBookingScreen() {
   const handleSubmit = async () => {
     if (globalBookingLock) return;
     
-    if (!fullName || !selectedCar || !startDate || !endDate || !totalPrice) {
+    if (!fullName || !startDate || !endDate || !totalPrice) {
       setErrorMsg('Please fill in all required fields (Name, Dates, Car, and Price).');
       return;
     }
@@ -308,15 +321,21 @@ export default function NewBookingScreen() {
 
     try {
       // 0. Double-check for overlapping bookings in the database
-      const { data: overlappingBookings, error: overlapErr } = await supabase
-        .from('bookings')
-        .select('id')
-        .eq('car_id', selectedCar.id)
-        .in('status', ['active', 'pending'])
-        .lte('start_date', endDate)
-        .gte('end_date', startDate);
+      let overlappingBookings: any[] = [];
+      if (selectedCar) {
+        const { data: ob, error: overlapErr } = await supabase
+          .from('bookings')
+          .select('id')
+          .eq('car_id', selectedCar.id)
+          .in('status', ['active', 'pending', 'confirmed'])
+          .lte('start_date', endDate)
+          .gte('end_date', startDate);
+          
+  
+        overlappingBookings = ob || [];
+      }
         
-      if (overlapErr) throw overlapErr;
+
       
       if (overlappingBookings && overlappingBookings.length > 0) {
         setErrorMsg('This vehicle is already booked during the selected dates. Please choose different dates.');
@@ -354,19 +373,26 @@ export default function NewBookingScreen() {
       }
 
       // 3. Create Booking
+      const payload: any = {
+        tenant_id: tenantId,
+        customer_id: finalCustId,
+        start_date: startDate,
+        end_date: endDate,
+        total_amount: parseFloat(totalPrice),
+        status: bookingStatus,
+        comments: comments,
+        requested_model: requestedModel || (selectedCar ? `${selectedCar.make} ${selectedCar.model}` : null)
+      };
+      if (selectedCar) {
+        payload.car_id = selectedCar.id;
+      }
+      
       const { data: bookingData, error: bookErr } = await supabase
         .from('bookings')
-        .insert([{
-          tenant_id: tenantId,
-          customer_id: finalCustId,
-          car_id: selectedCar.id,
-          start_date: startDate,
-          end_date: endDate,
-          total_amount: parseFloat(totalPrice),
-          status: 'active'
-        }])
+        .insert([payload])
         .select()
         .single();
+        
       if (bookErr) throw bookErr;
 
       // 4. Log Advance Payment
@@ -383,7 +409,9 @@ export default function NewBookingScreen() {
       }
 
       // 5. Update Car Status
-      await supabase.from('cars').update({ status: 'rented' }).eq('id', selectedCar.id);
+      if (selectedCar && bookingStatus === 'confirmed') {
+        await supabase.from('cars').update({ status: 'rented' }).eq('id', selectedCar.id);
+      }
 
       setSuccessMsg('Booking successfully registered! Redirecting...');
       setTimeout(() => {
@@ -539,6 +567,67 @@ export default function NewBookingScreen() {
           </View>
         </View>
 
+
+        {/* Section: Booking Type & Status */}
+        <Text className="text-xs font-bold text-primary/70 uppercase tracking-widest mb-4 border-t border-gray-100 pt-8">
+          Booking Classification
+        </Text>
+        
+        <View className="flex-col md:flex-row mb-6 space-y-4 md:space-y-0 md:space-x-4">
+          <View className="flex-1">
+            <Text className="text-xs font-bold text-secondary mb-2">BOOKING STATUS *</Text>
+            <View className="flex-row rounded-xl overflow-hidden border border-gray-200">
+              <TouchableOpacity 
+                className={`flex-1 py-3 items-center ${bookingStatus === 'enquiry' ? 'bg-amber-100' : 'bg-gray-50'}`}
+                onPress={() => setBookingStatus('enquiry')}
+              >
+                <Text className={`font-bold text-sm ${bookingStatus === 'enquiry' ? 'text-amber-800' : 'text-gray-400'}`}>Enquiry</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                className={`flex-1 py-3 items-center border-l border-gray-200 ${bookingStatus === 'confirmed' ? 'bg-emerald-100' : 'bg-gray-50'}`}
+                onPress={() => setBookingStatus('confirmed')}
+              >
+                <Text className={`font-bold text-sm ${bookingStatus === 'confirmed' ? 'text-emerald-800' : 'text-gray-400'}`}>Confirmed</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          <View className="flex-1">
+            <Text className="text-xs font-bold text-secondary mb-2">REQUESTED MODEL (From Fleet)</Text>
+            {selectedCar ? (
+               <View className="bg-gray-100 border border-gray-200 rounded-xl px-4 py-3">
+                 <Text className="text-primary font-medium opacity-50">Locked to: {selectedCar.make} {selectedCar.model}</Text>
+               </View>
+            ) : (
+              <View className="flex-row flex-wrap" style={{ gap: 8 }}>
+                {availableModels.map(m => (
+                  <TouchableOpacity 
+                    key={m} 
+                    onPress={() => setRequestedModel(m === requestedModel ? '' : m)}
+                    className={`px-3 py-2 rounded-lg border shadow-sm ${requestedModel === m ? 'bg-primary border-primary' : 'bg-white border-gray-200 hover:bg-gray-50'}`}
+                  >
+                    <Text className={`text-xs font-bold ${requestedModel === m ? 'text-white' : 'text-secondary/70'}`}>{m}</Text>
+                  </TouchableOpacity>
+                ))}
+                {availableModels.length === 0 && (
+                  <Text className="text-xs text-gray-400 italic py-2">Loading fleet models...</Text>
+                )}
+              </View>
+            )}
+          </View>
+        </View>
+        
+        <View className="mb-6">
+          <Text className="text-xs font-bold text-secondary mb-2">CUSTOMER PREFERENCES / NOTES</Text>
+          <TextInput 
+            className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-primary font-medium min-h-[80px]"
+            placeholder="e.g. Flight arrives at 3am, prefers the black one..."
+            multiline={true}
+            value={comments}
+            onChangeText={setComments}
+          />
+        </View>
+
         {/* Section 2: Reservation */}
         <Text className="text-xs font-bold text-primary/70 uppercase tracking-widest mb-4 border-t border-gray-100 pt-8">
           2. Reservation Specifications
@@ -653,7 +742,7 @@ export default function NewBookingScreen() {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text className="text-white font-bold tracking-wide">Register Reservation</Text>
+              <Text className="text-white font-bold tracking-wide">SUBMIT</Text>
             )}
           </TouchableOpacity>
         </View>

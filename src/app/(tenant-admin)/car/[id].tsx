@@ -96,6 +96,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
   useEffect(() => {
     if (id) {
       fetchCarDetails();
+      setSelectedBooking(null);
     }
   }, [id]);
 
@@ -129,7 +130,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
 
       let marked: any = {};
       if (bookings) {
-        bookings.filter((b: any) => b.status === 'active' || b.status === 'pending').forEach((b: any) => {
+        bookings.filter((b: any) => b.status === 'active' || b.status === 'pending' || b.status === 'confirmed').forEach((b: any) => {
           let curr = new Date(b.start_date);
           const end = new Date(b.end_date);
           while (curr <= end) {
@@ -193,6 +194,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
       });
       // Refresh background data
       fetchCarDetails();
+      setSelectedBooking(null);
       
     } catch (err: any) {
       setPaymentError(err.message || 'Failed to record payment.');
@@ -265,6 +267,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
       if (error) throw error;
       setSelectedBooking(null);
       fetchCarDetails();
+      setSelectedBooking(null);
       Alert.alert('Deleted', 'Booking deleted successfully.');
     } catch (e: any) {
       if (Platform.OS === 'web') { window.alert('Error: ' + e.message); } else { Alert.alert('Error', e.message); }
@@ -289,6 +292,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
       const { error } = await supabase.from('maintenance_records').delete().eq('id', mId);
       if (error) throw error;
       fetchCarDetails();
+      setSelectedBooking(null);
       setShowMaintenanceModal(false);
       Alert.alert('Deleted', 'Maintenance record deleted successfully.');
     } catch (e: any) {
@@ -374,6 +378,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
       setEmiRecords(prev => [newRecord, ...prev]);
       
       fetchCarDetails();
+      setSelectedBooking(null);
       
     } catch (e: any) {
       console.error("EMI Save Error:", e);
@@ -389,6 +394,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
       const { error } = await supabase.from('emi_payments').delete().eq('id', eId);
       if (error) throw error;
       fetchCarDetails();
+      setSelectedBooking(null);
     } catch (e: any) {
       if (Platform.OS === 'web') window.alert('Error: ' + e.message);
       else Alert.alert('Error', e.message);
@@ -462,6 +468,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
       }
       
       fetchCarDetails();
+      setSelectedBooking(null);
       setShowMaintenanceModal(false);
       setMWorkshop(''); setMDesc(''); setMAmount(''); setMImage(null); setEditMaintenanceId(null);
     } catch (err: any) {
@@ -546,38 +553,38 @@ const WebDatePicker = ({ value, onChange }: any) => {
           <View className="w-1/2 md:w-1/4 p-1">
             <View className="bg-white border-l-4 border-l-blue-500 border-t border-b border-r border-gray-100 p-4 rounded-xl shadow-sm h-full justify-between">
               <Text className="text-[9px] md:text-[10px] font-bold text-secondary/50 uppercase tracking-widest mb-2">Total Bookings</Text>
-              <Text className="text-2xl md:text-3xl font-black text-primary" numberOfLines={1} adjustsFontSizeToFit>{analytics.totalBookings}</Text>
+              <Text className="text-2xl md:text-3xl font-black text-primary" >{analytics.totalBookings}</Text>
             </View>
           </View>
           <View className="w-1/2 md:w-1/4 p-1">
             <View className="bg-white border-l-4 border-l-purple-500 border-t border-b border-r border-gray-100 p-4 rounded-xl shadow-sm h-full justify-between">
               <Text className="text-[9px] md:text-[10px] font-bold text-secondary/50 uppercase tracking-widest mb-2">Gross Revenue</Text>
-              <Text className="text-2xl md:text-3xl font-black text-primary" numberOfLines={1} adjustsFontSizeToFit>₹{analytics.grossRevenue}</Text>
+              <Text className="text-2xl md:text-3xl font-black text-primary" >₹{analytics.grossRevenue}</Text>
             </View>
           </View>
           <View className="w-1/2 md:w-1/4 p-1">
             <View className="bg-white border-l-4 border-l-emerald-500 border-t border-b border-r border-gray-100 p-4 rounded-xl shadow-sm h-full justify-between">
               <Text className="text-[9px] md:text-[10px] font-bold text-secondary/50 uppercase tracking-widest mb-2">Collected</Text>
-              <Text className="text-2xl md:text-3xl font-black text-primary" numberOfLines={1} adjustsFontSizeToFit>₹{analytics.collectedRevenue}</Text>
+              <Text className="text-2xl md:text-3xl font-black text-primary" >₹{analytics.collectedRevenue}</Text>
             </View>
           </View>
           <View className="w-1/2 md:w-1/4 p-1">
             <View className="bg-white border-l-4 border-l-red-500 border-t border-b border-r border-gray-100 p-4 rounded-xl shadow-sm h-full justify-between">
               <Text className="text-[9px] md:text-[10px] font-bold text-secondary/50 uppercase tracking-widest mb-2">Pending Dues</Text>
-              <Text className="text-2xl md:text-3xl font-black text-primary" numberOfLines={1} adjustsFontSizeToFit>₹{analytics.pendingDues}</Text>
+              <Text className="text-2xl md:text-3xl font-black text-primary" >₹{analytics.pendingDues}</Text>
             </View>
           </View>
           <View className="w-1/2 md:w-1/4 p-1">
             <View className="bg-white border-l-4 border-l-orange-500 border-t border-b border-r border-gray-100 p-4 rounded-xl shadow-sm h-full justify-between">
               <Text className="text-[9px] md:text-[10px] font-bold text-secondary/50 uppercase tracking-widest mb-2">Maintenance Cost</Text>
-              <Text className="text-2xl md:text-3xl font-black text-primary" numberOfLines={1} adjustsFontSizeToFit>₹{analytics.totalMaintenance}</Text>
+              <Text className="text-2xl md:text-3xl font-black text-primary" >₹{analytics.totalMaintenance}</Text>
             </View>
           </View>
           {car?.is_financed && (
             <View className="w-1/2 md:w-1/4 p-1">
               <View className="bg-white border-l-4 border-l-indigo-500 border-t border-b border-r border-gray-100 p-4 rounded-xl shadow-sm h-full justify-between">
                 <Text className="text-[9px] md:text-[10px] font-bold text-secondary/50 uppercase tracking-widest mb-2">Pending EMI / Loan</Text>
-                <Text className="text-2xl md:text-3xl font-black text-primary" numberOfLines={1} adjustsFontSizeToFit>₹{pendingEmi}</Text>
+                <Text className="text-2xl md:text-3xl font-black text-primary" >₹{pendingEmi}</Text>
               </View>
             </View>
           )}
@@ -643,7 +650,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
               <Text className="text-[10px] font-bold text-blue-800 uppercase tracking-widest mb-2">Finance Details</Text>
               <View className="flex-row justify-between mb-2">
                 <Text className="text-xs font-bold text-blue-900">{car.finance_bank}</Text>
-                {car.finance_doc_url && (
+                {!!car.finance_doc_url && (
                   <TouchableOpacity onPress={() => window.open(car.finance_doc_url)}>
                     <Text className="text-xs font-bold text-blue-600 underline">View Doc</Text>
                   </TouchableOpacity>
@@ -656,69 +663,51 @@ const WebDatePicker = ({ value, onChange }: any) => {
             </View>
           )}
 
-          <View className="mb-6">
-            <Text className="text-[10px] font-bold text-secondary/50 uppercase tracking-widest mb-2">Compliance Documents & Validity</Text>
-            <View className="flex-row flex-wrap" style={{ gap: 8 }}>
+                    <View className="mb-6 w-full">
+            <Text className="text-[10px] font-bold text-secondary/50 uppercase tracking-widest mb-3">Compliance Documents & Validity</Text>
+            <View className="w-full flex-row flex-wrap" style={{ gap: 12 }}>
               
-              <View className="items-center">
+              <View className="flex-[1] min-w-[45%] md:min-w-[120px] bg-gray-50 rounded-xl p-4 border border-gray-100 flex-col justify-between items-center h-[90px]">
                 {car.rc_book_url ? (
-                  <TouchableOpacity onPress={() => window.open(car.rc_book_url)} className="bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg"><Text className="text-xs font-bold text-primary">📄 RC Book</Text></TouchableOpacity>
-                ) : <View className="bg-red-50 border border-red-100 px-3 py-2 rounded-lg"><Text className="text-xs font-bold text-red-600">📄 Missing RC Book</Text></View>}
-                <Text className="text-[9px] font-bold text-secondary/60 mt-1">{car.rc_number || 'No RC Number'}</Text>
+                  <TouchableOpacity onPress={() => window.open(car.rc_book_url)} className="bg-white border border-gray-200 px-3 py-2 rounded-lg w-full items-center"><Text className="text-xs font-bold text-primary">📄 RC Book</Text></TouchableOpacity>
+                ) : <View className="bg-red-50 border border-red-100 px-2 py-2 rounded-lg w-full items-center"><Text className="text-[11px] font-bold text-red-600 text-center">Missing RC</Text></View>}
+                <Text className="text-[10px] font-bold text-secondary/60 text-center mt-2" numberOfLines={1}>{car.rc_number || 'No RC Number'}</Text>
               </View>
 
-              <View className="items-center">
+              <View className="flex-[1] min-w-[45%] md:min-w-[120px] bg-gray-50 rounded-xl p-4 border border-gray-100 flex-col justify-between items-center h-[90px]">
                 {car.pollution_cert_url ? (
-                  <TouchableOpacity onPress={() => window.open(car.pollution_cert_url)} className="bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg"><Text className="text-xs font-bold text-primary">🌿 Pollution</Text></TouchableOpacity>
-                ) : <View className="bg-red-50 border border-red-100 px-3 py-2 rounded-lg"><Text className="text-xs font-bold text-red-600">🌿 Missing Pollution</Text></View>}
-                <Text className="text-[9px] font-bold text-secondary/60 mt-1">{car.pucc_no ? `PUCC: ${car.pucc_no}` : ''}</Text>
-                <Text className="text-[9px] font-bold text-secondary/60">{car.pollution_expiry ? `Valid till ${formatDDMMYYYY(car.pollution_expiry)}` : 'No expiry set'}</Text>
+                  <TouchableOpacity onPress={() => window.open(car.pollution_cert_url)} className="bg-white border border-gray-200 px-3 py-2 rounded-lg w-full items-center"><Text className="text-xs font-bold text-primary">🌿 PUCC</Text></TouchableOpacity>
+                ) : <View className="bg-red-50 border border-red-100 px-2 py-2 rounded-lg w-full items-center"><Text className="text-[11px] font-bold text-red-600 text-center">Missing PUCC</Text></View>}
+                <Text className="text-[10px] font-bold text-secondary/60 text-center mt-2" numberOfLines={1}>{car.pollution_expiry ? `Exp: ${formatDDMMYYYY(car.pollution_expiry)}` : 'No Expiry'}</Text>
               </View>
 
-              <View className="items-center">
+              <View className="flex-[1] min-w-[45%] md:min-w-[120px] bg-gray-50 rounded-xl p-4 border border-gray-100 flex-col justify-between items-center h-[90px]">
                 {car.fitness_tax_url ? (
-                  <TouchableOpacity onPress={() => window.open(car.fitness_tax_url)} className="bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg"><Text className="text-xs font-bold text-primary">✅ Fitness/Tax</Text></TouchableOpacity>
-                ) : <View className="bg-red-50 border border-red-100 px-3 py-2 rounded-lg"><Text className="text-xs font-bold text-red-600">✅ Missing Fitness/Tax</Text></View>}
-                <Text className="text-[9px] font-bold text-secondary/60 mt-1">{car.fitness_tax_expiry ? `Valid till ${formatDDMMYYYY(car.fitness_tax_expiry)}` : 'No expiry set'}</Text>
+                  <TouchableOpacity onPress={() => window.open(car.fitness_tax_url)} className="bg-white border border-gray-200 px-3 py-2 rounded-lg w-full items-center"><Text className="text-xs font-bold text-primary">✅ Fitness/Tax</Text></TouchableOpacity>
+                ) : <View className="bg-red-50 border border-red-100 px-2 py-2 rounded-lg w-full items-center"><Text className="text-[11px] font-bold text-red-600 text-center">Missing Tax</Text></View>}
+                <Text className="text-[10px] font-bold text-secondary/60 text-center mt-2" numberOfLines={1}>{car.fitness_tax_expiry ? `Exp: ${formatDDMMYYYY(car.fitness_tax_expiry)}` : 'No Expiry'}</Text>
               </View>
 
-              <View className="items-center">
+              <View className="flex-[1] min-w-[45%] md:min-w-[120px] bg-gray-50 rounded-xl p-4 border border-gray-100 flex-col justify-between items-center h-[90px]">
                 {car.insurance_url ? (
-                  <TouchableOpacity onPress={() => window.open(car.insurance_url)} className="bg-gray-50 border border-gray-200 px-3 py-2 rounded-lg"><Text className="text-xs font-bold text-primary">🛡️ Insurance</Text></TouchableOpacity>
-                ) : <View className="bg-red-50 border border-red-100 px-3 py-2 rounded-lg"><Text className="text-xs font-bold text-red-600">🛡️ Missing Insurance</Text></View>}
-                <Text className="text-[9px] font-bold text-secondary/60 mt-1">{car.insurance_company ? car.insurance_company : ''}</Text>
-                <Text className="text-[9px] font-bold text-secondary/60">{car.insurance_expiry ? `Valid till ${formatDDMMYYYY(car.insurance_expiry)}` : 'No expiry set'}</Text>
+                  <TouchableOpacity onPress={() => window.open(car.insurance_url)} className="bg-white border border-gray-200 px-3 py-2 rounded-lg w-full items-center"><Text className="text-xs font-bold text-primary">🛡️ Insurance</Text></TouchableOpacity>
+                ) : <View className="bg-red-50 border border-red-100 px-2 py-2 rounded-lg w-full items-center"><Text className="text-[11px] font-bold text-red-600 text-center">Missing Ins</Text></View>}
+                <Text className="text-[10px] font-bold text-secondary/60 text-center mt-2" numberOfLines={1}>{car.insurance_expiry ? `Exp: ${formatDDMMYYYY(car.insurance_expiry)}` : 'No Expiry'}</Text>
               </View>
 
               {/* Dynamic Documents */}
               {car.custom_documents && car.custom_documents.map((cDoc: any, i: number) => (
-                <View key={i} className="items-center">
-                  <TouchableOpacity onPress={() => window.open(cDoc.url)} className="bg-blue-50 border border-blue-200 px-3 py-2 rounded-lg">
-                    <Text className="text-xs font-bold text-blue-700">📁 {cDoc.name}</Text>
+                <View key={i} className="flex-[1] min-w-[45%] md:min-w-[120px] bg-blue-50 rounded-xl p-4 border border-blue-100 flex-col justify-between items-center h-[90px]">
+                  <TouchableOpacity onPress={() => window.open(cDoc.url)} className="bg-white border border-blue-200 px-3 py-2 rounded-lg w-full items-center">
+                    <Text className="text-xs font-bold text-blue-700" numberOfLines={1}>📁 {cDoc.name}</Text>
                   </TouchableOpacity>
-                  <Text className="text-[9px] font-bold text-secondary/60 mt-1">{cDoc.expiry ? `Valid till ${formatDDMMYYYY(cDoc.expiry)}` : 'No expiry set'}</Text>
+                  <Text className="text-[10px] font-bold text-blue-800/60 text-center mt-2" numberOfLines={1}>{cDoc.expiry ? `Exp: ${formatDDMMYYYY(cDoc.expiry)}` : 'No Expiry'}</Text>
                 </View>
               ))}
-
             </View>
           </View>
 
-          <View className="flex-row justify-between mb-6">
-            <View className="items-start">
-              <Text className="text-[10px] font-bold text-secondary/50 uppercase tracking-widest mb-1">Current Status</Text>
-              <View className={`px-3 py-1 rounded mt-1 ${
-                  car.status === 'available' ? 'bg-emerald-50 border border-emerald-100' :
-                  car.status === 'rented' ? 'bg-blue-50 border border-blue-100' :
-                  'bg-amber-50 border border-amber-100'
-                }`}>
-                <Text className={`text-xs font-bold uppercase ${
-                  car.status === 'available' ? 'text-emerald-700' :
-                  car.status === 'rented' ? 'text-blue-700' :
-                  'text-amber-700'
-                }`}>{car.status}</Text>
-              </View>
-            </View>
-          </View>
+
 
         </View>
 
@@ -731,7 +720,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
             <Calendar
               style={{ width: '100%' }}
               minDate={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]}
-              markingType={'period'}
+              markingType={'custom'}
               markedDates={bookedDates}
               theme={{
                 backgroundColor: '#ffffff',
@@ -804,7 +793,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
 
       {/* Maintenance History Section */}
       <View className="mt-8 mb-4 border-t border-gray-200 pt-8">
-        <View className="flex-row justify-between items-center mb-6">
+        <View className="flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
           <Text className="text-xl font-bold text-primary">Maintenance & Repairs</Text>
           <TouchableOpacity 
             className="bg-amber-100 border border-amber-200 px-4 py-2 rounded-lg flex-row items-center"
@@ -830,7 +819,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
                 <View className="flex-1 mb-3 md:mb-0">
                   <View className="flex-row items-center gap-3 mb-1">
                     <Text className="text-sm font-black text-primary">{record.workshop_name || 'Unknown Workshop'}</Text>
-                    <Text className="text-[10px] font-bold text-secondary/50 uppercase bg-gray-100 px-2 py-0.5 rounded-full">{formatDDMMYYYY(record.date)}</Text>
+                    <Text className="text-[10px] font-bold text-secondary/50 uppercase bg-gray-100 px-2 py-0.5 rounded-full whitespace-nowrap">{formatDDMMYYYY(record.date)}</Text>
                   </View>
                   <Text className="text-xs text-secondary/80">{record.description || 'No description provided.'}</Text>
                 </View>
@@ -852,7 +841,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
                     <Text className="text-secondary font-bold text-[10px] uppercase">Edit</Text>
                   </TouchableOpacity>
                   
-                  {record.bill_image_url && (
+                  {!!record.bill_image_url && (
                     <TouchableOpacity onPress={() => window.open(record.bill_image_url, '_blank')} className="bg-gray-100 px-3 py-1.5 rounded-md border border-gray-200 shadow-sm">
                       <Text className="text-primary font-bold text-[10px] uppercase">View Bill</Text>
                     </TouchableOpacity>
@@ -867,7 +856,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
       {/* EMI PAYMENTS LOG */}
       {car?.is_financed && (
         <View className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-200 mt-8">
-          <View className="flex-row justify-between items-center mb-6">
+          <View className="flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
             <View>
               <Text className="text-xl font-black text-primary">EMI Payments Log</Text>
               <Text className="text-sm font-bold text-secondary/60 mt-1">Track monthly EMI installments</Text>
@@ -887,7 +876,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
           {emiRecords.length > 0 ? (
             <View className="space-y-4">
               {emiRecords.map((e, idx) => (
-                <View key={idx} className="flex-row justify-between items-center p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <View key={idx} className="flex-col md:flex-row justify-between items-start md:items-center p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3 md:space-y-0">
                   <View>
                     <Text className="text-sm font-bold text-secondary">{formatDDMMYYYY(e.payment_date)}</Text>
                     <Text className="text-xs text-secondary/60 mt-1 uppercase tracking-wider">EMI Installment</Text>
@@ -990,20 +979,15 @@ const WebDatePicker = ({ value, onChange }: any) => {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
               <View className="p-5 md:p-8">
               
-              <View className="flex-row justify-between items-start mb-8 border-b border-gray-100 pb-6">
-                <View>
+              <View className="flex-row justify-between items-start mb-6 border-b border-gray-100 pb-6">
+                <View className="flex-1 pr-4">
                   <Text className="text-xs font-black text-secondary/40 uppercase tracking-[0.2em] mb-2">Booking Ledger</Text>
                   <Text className="text-3xl font-black text-primary tracking-tight">#{selectedBooking.id.split('-')[0].toUpperCase()}</Text>
                   <Text className="text-base text-secondary/80 font-medium mt-1">{selectedBooking.customers?.full_name}</Text>
                 </View>
-                <View className="flex-col gap-2 items-end">
-                  <TouchableOpacity onPress={() => { setSelectedBooking(null); setPaymentAmount(''); setPaymentError(''); setShowDeleteConfirm(false); }} className="bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-full border border-gray-200">
-                    <Text className="text-gray-500 font-bold text-xs uppercase tracking-wider">Close</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={handleDeleteBooking} className="bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full border border-red-200 mt-2">
-                    <Text className="text-red-600 font-bold text-[10px] uppercase tracking-wider">Delete Booking</Text>
-                  </TouchableOpacity>
-                </View>
+                <TouchableOpacity onPress={() => setSelectedBooking(null)} className="p-2 bg-gray-50 rounded-full">
+                  <Text className="text-gray-500 font-bold text-lg">✕</Text>
+                </TouchableOpacity>
               </View>
 
               <View className="flex-col md:flex-row gap-6 mb-10">
@@ -1039,10 +1023,10 @@ const WebDatePicker = ({ value, onChange }: any) => {
                   </View>
                 ) : null}
 
-                <View className="flex-col sm:flex-row gap-4">
+                <View className="flex-col md:flex-row gap-4">
                   <View className="flex-1">
                     <TextInput 
-                      className="bg-gray-50 border border-gray-200 rounded-xl px-6 py-4 text-primary font-bold text-lg"
+                      className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-primary font-bold text-lg w-full"
                       placeholder="Enter amount (₹)"
                       keyboardType="numeric"
                       value={paymentAmount}
@@ -1050,7 +1034,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
                     />
                   </View>
                   <TouchableOpacity 
-                    className="bg-emerald-600 px-8 py-4 rounded-xl justify-center items-center shadow-lg shadow-emerald-200 hover:bg-emerald-700"
+                    className="bg-emerald-600 px-6 py-4 rounded-xl justify-center items-center shadow-lg w-full md:w-auto"
                     onPress={handleRecordPayment}
                     disabled={isProcessingPayment}
                   >
@@ -1060,6 +1044,8 @@ const WebDatePicker = ({ value, onChange }: any) => {
                       <Text className="text-white font-bold text-sm tracking-wide">CONFIRM PAYMENT</Text>
                     )}
                   </TouchableOpacity>
+
+
                 </View>
               </View>
 
@@ -1071,7 +1057,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
                       <View key={i} className={`flex-row justify-between items-center p-4 ${i !== selectedBooking.payments.length - 1 ? 'border-b border-gray-50' : ''}`}>
                         <View className="flex-row items-center gap-3">
                           <View className="w-2 h-2 rounded-full bg-emerald-400" />
-                          <Text className="text-sm font-bold text-secondary/80">{formatDDMMYYYY(p.created_at)}</Text>
+                          <Text className="text-sm font-bold text-secondary/80 whitespace-nowrap">{formatDDMMYYYY(p.created_at)}</Text>
                         </View>
                         <View className="bg-emerald-50 px-3 py-1 rounded-md border border-emerald-100">
                           <Text className="text-sm font-black text-emerald-700">+ ₹{p.amount}</Text>
@@ -1085,6 +1071,15 @@ const WebDatePicker = ({ value, onChange }: any) => {
                   </View>
                 )}
               </View>
+
+              <View className="border-t border-gray-100 pt-6 mt-2">
+                <TouchableOpacity 
+                  className="bg-red-50 border border-red-200 py-3 rounded-xl items-center"
+                  onPress={handleDeleteBooking}
+                >
+                  <Text className="text-red-600 font-bold text-[10px] uppercase tracking-widest">Delete Reservation</Text>
+                </TouchableOpacity>
+              </View>
             </View>
             </ScrollView>
           </View>
@@ -1096,7 +1091,7 @@ const WebDatePicker = ({ value, onChange }: any) => {
       {showEmiModal && (
         <View className="absolute inset-0 z-50 items-center justify-center bg-black/60 p-4" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
           <View className="bg-white w-full max-w-md rounded-[24px] md:rounded-[32px] p-6 md:p-8 shadow-2xl relative">
-            <View className="flex-row justify-between items-center mb-6">
+            <View className="flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
               <View>
                 <Text className="text-xl font-black text-primary">Log EMI Payment</Text>
                 <Text className="text-sm text-secondary/60 mt-1">Record a new installment</Text>
